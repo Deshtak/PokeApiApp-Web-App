@@ -1,0 +1,74 @@
+@page "/"
+@inject PokeApiService PokeApiService
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudText Typo="Typo.h4" Class="text-center mb-4" Color="Color.Primary">Pokédex</MudText>
+
+    <MudTextField @bind-Value="pokemonName" Label="Buscar Pokémon" Variant="Variant.Outlined" Color="Color.Primary" />
+    <MudButton OnClick="FetchPokemon" Color="Color.Primary" Class="mt-2">Buscar</MudButton>
+
+    @if (pokemon != null)
+    {
+        <MudCard  Class="mt-4" Style="background-color: #FFFFFF; border: 2px solid #FF0000; border-radius: 16px;">
+            <MudCard>
+                <img src="@pokemonImage" alt="@pokemon.Name" style="max-height: 300px; object-fit: contain;" />
+            </MudCard>
+            <MudCardContent>
+                <MudText Align="Align.Center" Typo="Typo.h5" Color="Color.Primary">@pokemon.Name.ToUpper()</MudText>
+                <MudText Align="Align.Center" Typo="Typo.subtitle1" Color="Color.Primary">ID: @pokemon.Id</MudText>
+                <MudText Align="Align.Center" Typo="Typo.body1" Color="Color.Primary" Class="mt-2">Tipo:</MudText>
+                <MudChipSet Style="display: flex; justify-content: center;" T="string">
+                    @foreach (var type in pokemon.Types)
+                    {
+                        <MudChip Align="Align.Center" T="string" Color="Color.Warning" Variant="Variant.Filled">@type.Type.Name.ToUpper()</MudChip>
+                    }
+                </MudChipSet>
+                <MudText Align="Align.Center" Typo="Typo.body1" Class="pa-4 red shades-text text-white" Style="border-radius: 15px; ">Habilidades:</MudText>
+                <MudChipSet Style="display: flex; justify-content: center;" T="string">
+                    @foreach (var ability in pokemon.Abilities)
+                    {
+                        <MudChip T="string" Color="Color.Info" Variant="Variant.Filled">@ability.Ability.Name.ToUpper()</MudChip>
+                    }
+                </MudChipSet>
+           
+                
+
+            </MudCardContent>
+        </MudCard>
+    }
+    else if (errorMessage != null)
+    {
+        <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+    }
+</MudContainer>
+
+@code {
+    private string pokemonName = string.Empty;
+    private Pokemon? pokemon;
+    private string? pokemonImage;
+    private string? errorMessage;
+    
+
+
+    private async Task FetchPokemon()
+    {
+        try
+        {
+            errorMessage = null;
+            pokemon = await PokeApiService.GetPokemonAsync(pokemonName.ToLower());
+            pokemonImage = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{pokemon.Id}.png";
+            
+        }
+        catch (Exception ex)
+        {
+            pokemon = null;
+            pokemonImage = null;
+            
+            errorMessage = "No se pudo encontrar el Pokémon. Verifica el nombre ingresado.";
+        }
+    }
+}
+
+
+
+
