@@ -35,12 +35,39 @@ public class PokeApiService
 
         return pokemonDetails;
     }
+
+    // Método para obtener Pokémon por página (limitado a 20 por página)
+    public async Task<PokemonListResponse> GetPokemonPageAsync(int page)
+    {
+        int limit = 20; // Número de Pokémon por página
+        int offset = (page - 1) * limit; // Desplazamiento según la página
+
+        var response = await _httpClient.GetFromJsonAsync<PokemonListResponse>($"pokemon?limit={limit}&offset={offset}");
+        return response;
+    }
+
+    // Método para obtener los detalles completos de los Pokémon por página
+    public async Task<List<Pokemon>> GetPokemonDetailsPageAsync(int page)
+    {
+        var response = await GetPokemonPageAsync(page); // Obtener la lista básica de Pokémon para la página actual
+        var pokemonDetails = new List<Pokemon>();
+
+        foreach (var pokemon in response.Results)
+        {
+            var details = await _httpClient.GetFromJsonAsync<Pokemon>(pokemon.Url); // Obtener detalles de cada Pokémon usando su URL
+            if (details != null)
+                pokemonDetails.Add(details); // Agregar los detalles a la lista
+        }
+
+        return pokemonDetails;
+    }
 }
 
 // Clases para representar la respuesta de la API
 public class PokemonListResponse
 {
     public List<PokemonListItem> Results { get; set; }
+    public int Count { get; set; } // Total de Pokémon
 }
 
 public class PokemonListItem
@@ -77,4 +104,3 @@ public class AbilityInfo
 {
     public string Name { get; set; }
 }
-

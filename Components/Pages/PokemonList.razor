@@ -34,23 +34,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Obtener todos los detalles de los Pokémon (limitados por la paginación)
-        allPokemonDetails = await PokeApiService.GetAllPokemonDetailsAsync();
-        totalPokemonCount = allPokemonDetails.Count;
+        // Obtener el número total de Pokémon
+        var response = await PokeApiService.GetPokemonPageAsync(1); // Obtener la primera página para saber cuántos Pokémon hay en total
+        totalPokemonCount = response.Count;
 
-        // Cargar los Pokémon para la primera página
-        LoadCurrentPage();
+        // Obtener los Pokémon de la primera página
+        await LoadCurrentPage();
     }
 
-    private void OnPageChanged(int page)
+    private async Task OnPageChanged(int page)
     {
         currentPage = page;
-        LoadCurrentPage();
+        await LoadCurrentPage();
     }
 
-    private void LoadCurrentPage()
+    private async Task LoadCurrentPage()
     {
-        // Limitar a 20 Pokémon por página (calcular el rango de la página actual)
-        currentPokemonPage = allPokemonDetails.Skip((currentPage - 1) * 20).Take(20).ToList();
+        // Cargar los Pokémon para la página actual
+        currentPokemonPage = await PokeApiService.GetPokemonDetailsPageAsync(currentPage);
     }
 }
