@@ -1,34 +1,56 @@
+@page "/pokelist"
 @inject PokeApiService PokeApiService
 
-@page "/pokelist"
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudText Typo="Typo.h4" Class="text-center mb-4" Color="Color.Primary">Lista de Pokémon</MudText>
 
-<MudContainer>
-    @if (pokemonList == null)
-    {
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-    }
-    else
-    {
-        <MudGrid>
-            @foreach (var pokemon in pokemonList)
-            {
-                <MudItem xs="6" sm="4" md="3">
-                    <MudCard Class="ma-2">
-                        <MudCardContent>
-                            <MudText Typo="Typo.subtitle1">@pokemon.Name</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-            }
-        </MudGrid>
-    }
+    <MudGrid>
+        @foreach (var poke in currentPokemonPage)
+        {
+            <MudItem xs="6" sm="4" md="3">
+                <MudCard Class="ma-2">
+                    <MudCardMedia>
+                        <img src="@($"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{poke.Id}.png")" alt="@poke.Name" style="max-height: 150px; object-fit: contain;" />
+                    </MudCardMedia>
+                    <MudCardContent>
+                        <MudText Align="Align.Center" Typo="Typo.h6" Color="Color.Primary">@poke.Name.ToUpper()</MudText>
+                        <MudText Align="Align.Center" Typo="Typo.subtitle2" Color="Color.Primary">ID: @poke.Id</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <!-- Paginación -->
+    <MudPagination PageChanged="OnPageChanged" TotalItems="@totalPokemonCount" ItemsPerPage="20" />
+
 </MudContainer>
 
 @code {
-    private List<PokemonListItem>? pokemonList;
+    private List<Pokemon> allPokemonDetails = new List<Pokemon>();
+    private List<Pokemon> currentPokemonPage = new List<Pokemon>();
+    private int totalPokemonCount;
+    private int currentPage = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        pokemonList = await PokeApiService.GetAllPokemonAsync();
+        // Obtener todos los detalles de los Pokémon (limitados por la paginación)
+        allPokemonDetails = await PokeApiService.GetAllPokemonDetailsAsync();
+        totalPokemonCount = allPokemonDetails.Count;
+
+        // Cargar los Pokémon para la primera página
+        LoadCurrentPage();
+    }
+
+    private void OnPageChanged(int page)
+    {
+        currentPage = page;
+        LoadCurrentPage();
+    }
+
+    private void LoadCurrentPage()
+    {
+        // Limitar a 20 Pokémon por página (calcular el rango de la página actual)
+        currentPokemonPage = allPokemonDetails.Skip((currentPage - 1) * 20).Take(20).ToList();
     }
 }
