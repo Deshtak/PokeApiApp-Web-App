@@ -1,0 +1,34 @@
+@inject PokeApiService PokeApiService
+
+@page "/pokelist"
+
+<MudContainer>
+    @if (pokemonList == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var pokemon in pokemonList)
+            {
+                <MudItem xs="6" sm="4" md="3">
+                    <MudCard Class="ma-2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">@pokemon.Name</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private List<PokemonListItem>? pokemonList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pokemonList = await PokeApiService.GetAllPokemonAsync();
+    }
+}

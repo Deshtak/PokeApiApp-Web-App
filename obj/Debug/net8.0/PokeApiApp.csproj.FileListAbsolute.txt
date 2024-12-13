@@ -52,3 +52,4 @@ D:\RiderProjects\PokeApiApp\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
 D:\RiderProjects\PokeApiApp\bin\Debug\net8.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
 D:\RiderProjects\PokeApiApp\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
 D:\RiderProjects\PokeApiApp\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+D:\RiderProjects\PokeApiApp\obj\Debug\net8.0\PokeApiApp.sourcelink.json

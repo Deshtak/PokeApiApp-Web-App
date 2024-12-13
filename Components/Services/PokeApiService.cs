@@ -13,12 +13,29 @@ public class PokeApiService
     {
         return await _httpClient.GetFromJsonAsync<Pokemon>($"pokemon/{name}");
     }
-    
+    //Listar a todos los pokemones
+    public async Task<List<PokemonListItem>> GetAllPokemonAsync()
+    {
+        var response = await _httpClient.GetFromJsonAsync<PokemonListResponse>("pokemon?limit=100000&offset=0");
+        return response?.Results ?? new List<PokemonListItem>();
+    }
     
     // De aqui en adelante viene los id de especie
     
     
 }
+//todos los pokemones
+public class PokemonListResponse
+{
+    public List<PokemonListItem> Results { get; set; }
+}
+
+public class PokemonListItem
+{
+    public string Name { get; set; }
+    public string Url { get; set; }
+}
+//todos los pokemones
 
 public class Pokemon
 {
