@@ -1,73 +1,51 @@
+using RestSharp;
+
 public class PokeApiService
 {
-    private readonly HttpClient _httpClient;
+    private readonly RestClient _client;
 
-    public PokeApiService(IHttpClientFactory httpClientFactory)
+    public PokeApiService()
     {
-        _httpClient = httpClientFactory.CreateClient("PokeApi");
+        _client = new RestClient("https://pokeapi.co/api/v2/");
     }
 
     // Método para obtener un solo Pokémon por nombre
     public async Task<Pokemon?> GetPokemonAsync(string name)
     {
-        return await _httpClient.GetFromJsonAsync<Pokemon>($"pokemon/{name}");
+        var request = new RestRequest($"pokemon/{name}", Method.Get);
+        return await _client.GetAsync<Pokemon>(request);
+    }
+    
+    
+
+    // Método para obtener una página de Pokémon con solo su nombre y URL
+    public async Task<PokemonListResponse> GetPokemonPageAsync(int page, int pageSize = 20)
+    {
+        int offset = (page - 1) * pageSize;
+        var request = new RestRequest($"pokemon?limit={pageSize}&offset={offset}", Method.Get);
+        return await _client.GetAsync<PokemonListResponse>(request) ?? new PokemonListResponse { Results = new List<PokemonListItem>() };
     }
 
-    // Método para obtener todos los Pokémon con solo su nombre y URL
-    public async Task<List<PokemonListItem>> GetAllPokemonAsync()
+    // Método para obtener los detalles completos de los Pokémon de una página
+    public async Task<List<Pokemon>> GetPokemonDetailsPageAsync(int page, int pageSize = 20)
     {
-        var response = await _httpClient.GetFromJsonAsync<PokemonListResponse>("pokemon?limit=100000&offset=0");
-        return response?.Results ?? new List<PokemonListItem>();
-    }
-
-    // Método para obtener los detalles completos de todos los Pokémon
-    public async Task<List<Pokemon>> GetAllPokemonDetailsAsync()
-    {
-        var response = await GetAllPokemonAsync(); // Obtener la lista básica de Pokémon
-        var pokemonDetails = new List<Pokemon>();
-
-        foreach (var pokemon in response)
+        var pokemonPage = await GetPokemonPageAsync(page, pageSize);
+        var tasks = pokemonPage.Results.Select(async item =>
         {
-            var details = await _httpClient.GetFromJsonAsync<Pokemon>(pokemon.Url); // Obtener detalles de cada Pokémon usando su URL
-            if (details != null)
-                pokemonDetails.Add(details); // Agregar los detalles a la lista
-        }
+            var detailsRequest = new RestRequest(item.Url, Method.Get);
+            return await _client.GetAsync<Pokemon>(detailsRequest);
+        });
 
-        return pokemonDetails;
-    }
-
-    // Método para obtener Pokémon por página (limitado a 20 por página)
-    public async Task<PokemonListResponse> GetPokemonPageAsync(int page)
-    {
-        int limit = 20; // Número de Pokémon por página
-        int offset = (page - 1) * limit; // Desplazamiento según la página
-
-        var response = await _httpClient.GetFromJsonAsync<PokemonListResponse>($"pokemon?limit={limit}&offset={offset}");
-        return response;
-    }
-
-    // Método para obtener los detalles completos de los Pokémon por página
-    public async Task<List<Pokemon>> GetPokemonDetailsPageAsync(int page)
-    {
-        var response = await GetPokemonPageAsync(page); // Obtener la lista básica de Pokémon para la página actual
-        var pokemonDetails = new List<Pokemon>();
-
-        foreach (var pokemon in response.Results)
-        {
-            var details = await _httpClient.GetFromJsonAsync<Pokemon>(pokemon.Url); // Obtener detalles de cada Pokémon usando su URL
-            if (details != null)
-                pokemonDetails.Add(details); // Agregar los detalles a la lista
-        }
-
-        return pokemonDetails;
+        var pokemonDetails = await Task.WhenAll(tasks);
+        return pokemonDetails.Where(details => details != null).ToList()!;
     }
 }
 
 // Clases para representar la respuesta de la API
 public class PokemonListResponse
 {
-    public List<PokemonListItem> Results { get; set; }
-    public int Count { get; set; } // Total de Pokémon
+    public int Count { get; set; }
+    public List<PokemonListItem> Results { get; set; } = new List<PokemonListItem>();
 }
 
 public class PokemonListItem
@@ -83,7 +61,10 @@ public class Pokemon
     public string Name { get; set; }
     public List<TypeWrapper> Types { get; set; }
     public List<AbilityWrapper> Abilities { get; set; }
+    public List<MoveWrapper> Moves { get; set; }
 }
+
+
 
 public class TypeWrapper
 {
@@ -91,6 +72,16 @@ public class TypeWrapper
 }
 
 public class TypeInfo
+{
+    public string Name { get; set; }
+}
+
+public class MoveWrapper
+{
+    public MoveInfo Move { get; set; }
+}
+
+public class MoveInfo
 {
     public string Name { get; set; }
 }

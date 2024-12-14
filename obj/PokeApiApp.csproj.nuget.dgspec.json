@@ -51,6 +51,10 @@
             "MudBlazor": {
               "target": "Package",
               "version": "[7.*, )"
+            },
+            "restsharp": {
+              "target": "Package",
+              "version": "[112.1.0, )"
             }
           },
           "imports": [

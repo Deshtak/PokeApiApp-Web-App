@@ -10,5 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
     <PackageReference Include="MudBlazor" Version="7.*" />
+    <PackageReference Include="restsharp" Version="112.1.0" />
   </ItemGroup>
 </Project>

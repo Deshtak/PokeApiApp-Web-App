@@ -9,9 +9,7 @@
         {
             <MudItem xs="6" sm="4" md="3">
                 <MudCard Class="ma-2">
-                    <MudCardMedia>
-                        <img src="@($"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{poke.Id}.png")" alt="@poke.Name" style="max-height: 150px; object-fit: contain;" />
-                    </MudCardMedia>
+                    <img src="@($"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{poke.Id}.png")" alt="@poke.Name" style="max-height: 150px; object-fit: contain;" />
                     <MudCardContent>
                         <MudText Align="Align.Center" Typo="Typo.h6" Color="Color.Primary">@poke.Name.ToUpper()</MudText>
                         <MudText Align="Align.Center" Typo="Typo.subtitle2" Color="Color.Primary">ID: @poke.Id</MudText>
