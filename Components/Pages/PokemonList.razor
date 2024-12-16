@@ -5,50 +5,46 @@
     <MudText Typo="Typo.h4" Class="text-center mb-4" Color="Color.Primary">Lista de Pokémon</MudText>
 
     <MudGrid>
-        @foreach (var poke in currentPokemonPage)
+        @if (pokemonList != null)
         {
-            <MudItem xs="6" sm="4" md="3">
-                <MudCard Class="ma-2">
-                    <img src="@($"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{poke.Id}.png")" alt="@poke.Name" style="max-height: 150px; object-fit: contain;" />
-                    <MudCardContent>
-                        <MudText Align="Align.Center" Typo="Typo.h6" Color="Color.Primary">@poke.Name.ToUpper()</MudText>
-                        <MudText Align="Align.Center" Typo="Typo.subtitle2" Color="Color.Primary">ID: @poke.Id</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+            @foreach (var pokemon in pokemonList)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Class="mt-4" Style="background-color: #FFFFFF; border: 2px solid #FF0000; border-radius: 16px;">
+                        <MudCardContent Style="align-items: center">
+                            <img src="@GetPokemonImageUrl(pokemon.Url)" alt="@pokemon.Name" style="width:100px; height:100px;" />
+                            <MudText Align="Align.Center" Typo="Typo.h5" Color="Color.Primary">@pokemon.Name</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.h6" Align="Align.Center">Cargando la lista de Pokémon...</MudText>
         }
     </MudGrid>
-
-    <!-- Paginación -->
-    <MudPagination PageChanged="OnPageChanged" TotalItems="@totalPokemonCount" ItemsPerPage="20" />
-
 </MudContainer>
 
 @code {
-    private List<Pokemon> allPokemonDetails = new List<Pokemon>();
-    private List<Pokemon> currentPokemonPage = new List<Pokemon>();
-    private int totalPokemonCount;
-    private int currentPage = 1;
+    private List<ListaInfo>? pokemonList;
 
     protected override async Task OnInitializedAsync()
     {
-        // Obtener el número total de Pokémon
-        var response = await PokeApiService.GetPokemonPageAsync(1); // Obtener la primera página para saber cuántos Pokémon hay en total
-        totalPokemonCount = response.Count;
-
-        // Obtener los Pokémon de la primera página
-        await LoadCurrentPage();
+        try
+        {
+            var response = await PokeApiService.GetPokeListAsync();
+            pokemonList = response?.Results ?? new List<ListaInfo>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar la lista de Pokémon: {ex.Message}");
+        }
     }
 
-    private async Task OnPageChanged(int page)
+    private string GetPokemonImageUrl(string url)
     {
-        currentPage = page;
-        await LoadCurrentPage();
-    }
-
-    private async Task LoadCurrentPage()
-    {
-        // Cargar los Pokémon para la página actual
-        currentPokemonPage = await PokeApiService.GetPokemonDetailsPageAsync(currentPage);
+        var id = url.TrimEnd('/').Split('/').Last();
+        return $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{id}.png";
     }
 }
