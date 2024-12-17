@@ -17,37 +17,15 @@ public class PokeApiService
         return await _client.GetAsync<Pokemon>(request);
     }
 
-    public async Task<ListPokemon?> GetPokeListAsync()
+    public async Task<List<ListaInfo>> GetPokeListAsync()
     {
         var request = new RestRequest("pokemon?limit=100000&offset=0", Method.Get);
-        return await _client.GetAsync<ListPokemon>(request);
+        var response = await _client.GetAsync<ListPokemon>(request);
+        return response?.Results ?? new List<ListaInfo>();
     }
 
-    
-    
-    
 
-    /*// Método para obtener una página de Pokémon con solo su nombre y URL
-    public async Task<PokemonListResponse> GetPokemonPageAsync(int page, int pageSize = 20)
-    {
-        int offset = (page - 1) * pageSize;
-        var request = new RestRequest($"pokemon?limit={pageSize}&offset={offset}", Method.Get);
-        return await _client.GetAsync<PokemonListResponse>(request) ?? new PokemonListResponse { Results = new List<PokemonListItem>() };
-    }
-
-    // Método para obtener los detalles completos de los Pokémon de una página
-    public async Task<List<Pokemon>> GetPokemonDetailsPageAsync(int page, int pageSize = 20)
-    {
-        var pokemonPage = await GetPokemonPageAsync(page, pageSize);
-        var tasks = pokemonPage.Results.Select(async item =>
-        {
-            var detailsRequest = new RestRequest(item.Url, Method.Get);
-            return await _client.GetAsync<Pokemon>(detailsRequest);
-        });
-
-        var pokemonDetails = await Task.WhenAll(tasks);
-        return pokemonDetails.Where(details => details != null).ToList()!;
-    }*/
+    
 }
 
 // Clases para representar la respuesta de la API
@@ -65,21 +43,8 @@ public class ListaInfo
     public string Url { get; set; }
 }
 
+//
 
-
-
-/*
-public class PokemonListResponse
-{
-    public int Count { get; set; }
-    public List<PokemonListItem> Results { get; set; } = new List<PokemonListItem>();
-}
-
-public class PokemonListItem
-{
-    public string Name { get; set; }
-    public string Url { get; set; }
-}*/
     
 // Clases para los detalles de cada Pokémon, primera pagina
 public class Pokemon
